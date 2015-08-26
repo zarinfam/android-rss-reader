@@ -5,11 +5,9 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
@@ -23,25 +21,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Locale;
 
 /**
@@ -79,25 +62,12 @@ public class MainActivity extends Activity {
     private CharSequence mDrawerTitle;
     private CharSequence mTitle;
     private String[] mTitles;
-    EditText title, link, description;
-    Button fetch, result;
-    private String finalUrl = "http://www.asriran.com";
-    private HandlerFragment object;
-    public static final String HTTP_METHOD_GET = "GET";
-    public static final String HTTP_METHOD_POST = "POST";
-    private ProgressDialog progress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        title = (EditText) findViewById(R.id.Title);
-        link = (EditText) findViewById(R.id.Link);
-        description = (EditText) findViewById(R.id.Description);
-
-        fetch = (Button) findViewById(R.id.Fetch);
-        result = (Button) findViewById(R.id.Result);
         mTitle = mDrawerTitle = getTitle();
         mTitles = getResources().getStringArray(R.array.item_array);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -114,30 +84,8 @@ public class MainActivity extends Activity {
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
 
-
-        fetch.setOnClickListener(new View.OnClickListener() {
-
-
-            @Override
-            public void onClick(View v) {
-                object = new HandlerFragment(finalUrl);
-                object.fetchXML();
-
-                while (object.parsingComplete) ;
-                title.setText(object.getTitle());
-                link.setText(object.getLink());
-                description.setText(object.getDescription());
-            }
-        });
-
-        result.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent in = new Intent(MainActivity.this, viewpage.class);
-                startActivity(in);
-            }
-        });
-
+        // ActionBarDrawerToggle ties together the the proper interactions
+        // between the sliding drawer and the action bar app icon
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,                  /* host Activity */
                 mDrawerLayout,         /* DrawerLayout object */
@@ -160,123 +108,65 @@ public class MainActivity extends Activity {
         if (savedInstanceState == null) {
             selectItem(0);
         }
-
-        new AsyncTask<String, Void, String>() {
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                progress = ProgressDialog.show(MainActivity.this, "",
-                        "«— »«ÿ »Â ”—Ê— ...", true);
-            }
-
-            @Override
-            protected String doInBackground(String... params) {
-                return connectToRESTServer(params);
-
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-
-                progress.dismiss();
-
-                if (result != null) {
-                    try {
-                        JSONObject jsonObject = new JSONObject(result);
-
-                        GsonBuilder builder = new GsonBuilder();
-                        Gson gson = builder.create();
-                        Post post = gson.fromJson(result, Post.class);//convert result to Post object
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-
-            }
-        }.execute("posts/1", HTTP_METHOD_GET);
     }
 
-        private String connectToRESTServer(String... params) {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
-            BufferedReader reader = null;
+    /* Called whenever we call invalidateOptionsMenu() */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // If the nav drawer is open, hide action items related to the content view
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
+        return super.onPrepareOptionsMenu(menu);
+    }
 
-            try {
-                String httpMethod = params[1];
-
-                URL url = new URL(Config.BACKEND_BASE_URL + params[0]);
-
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setReadTimeout(10000 /* milliseconds */);
-                connection.setConnectTimeout(15000 /* milliseconds */);
-                connection.setRequestMethod(httpMethod);
-
-                if (httpMethod.equals(HTTP_METHOD_GET)) {
-                    connection.setRequestProperty("Accept", "application/json");
-                    connection.setDoInput(true);
-                } else if (httpMethod.equals(HTTP_METHOD_POST)) {
-                    connection.setRequestProperty("Content-Type", "application/json");
-                    connection.setDoOutput(true);
-                    connection.setChunkedStreamingMode(0);
-
-                    OutputStream os = new BufferedOutputStream(connection.getOutputStream());
-                    os.write(params[2].getBytes());
-                    os.flush();
-                }
-
-                // Starts the query
-                connection.connect();
-                int responseCode = connection.getResponseCode();
-
-                reader = new BufferedReader(new InputStreamReader(
-                        (connection.getInputStream())));
-
-                // Convert the InputStream into a string
-                StringBuilder contentAsString = new StringBuilder();
-
-                String output;
-                while ((output = reader.readLine()) != null) {
-                    contentAsString.append(output);
-                }
-
-                if (responseCode != 200) {
-                    // parse error json message
-                    throw new RuntimeException("Failed : HTTP error code : "
-                            + responseCode);
-                }
-
-                connection.disconnect();
-
-                return contentAsString.toString();
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            return null;
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // The action bar home/up action should open or close the drawer.
+        // ActionBarDrawerToggle will take care of this.
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
         }
+        // Handle action buttons
+        switch(item.getItemId()) {
+            case R.id.action_websearch:
+                // create intent to perform web search for this planet
+                Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+                intent.putExtra(SearchManager.QUERY, getActionBar().getTitle());
+                // catch event that there's no activity to handle intent
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, R.string.app_not_available, Toast.LENGTH_LONG).show();
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+//////
 
 
 
-/* The click listner for ListView in the navigation drawer */
 
+    ////////////////////////// Clicked Drawer \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+    /* The click listner for ListView in the navigation drawer */
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             selectItem(position);
 
-            switch (position) {
-                case 0: {
+            switch (position)
+            {
+                case 0:
+                {
 
 
                     Log.i("", "position=" + position);
@@ -288,50 +178,60 @@ public class MainActivity extends Activity {
                     break;
 
 
+
                 }
-                case 1: {
-                    Log.i("", "position=" + position);
+                case 1:
+                {
+                    Log.i("","position="+position);
                     break;
                 }
-                case 2: {
-                    Log.i("", "position=" + position);
+                case 2:
+                {
+                    Log.i("","position="+position);
                     break;
                 }
-                case 3: {
-                    Log.i("", "position=" + position);
+                case 3:
+                {
+                    Log.i("","position="+position);
                     break;
                 }
-                case 4: {
-                    Log.i("", "position=" + position);
+                case 4:
+                {
+                    Log.i("","position="+position);
                     break;
                 }
-                case 5: {
-                    Log.i("", "position=" + position);
+                case 5:
+                {
+                    Log.i("","position="+position);
                     break;
                 }
-                case 6: {
-                    Log.i("", "position=" + position);
+                case 6:
+                {
+                    Log.i("","position="+position);
                     break;
                 }
-                case 7: {
-                    Log.i("", "position=" + position);
+                case 7:
+                {
+                    Log.i("","position="+position);
                     break;
                 }
 
-                case 8: {
-                    Log.i("", "position=" + position);
+                case 8:
+                {
+                    Log.i("","position="+position);
                     break;
                 }
 
-                case 9: {
-                    Log.i("", "position=" + position);
+                case 9:
+                {
+                    Log.i("","position="+position);
                     break;
                 }
             }
 
         }
-
     }
+
 
 
     private void selectItem(int position) {
@@ -399,51 +299,4 @@ public class MainActivity extends Activity {
             return rootView;
         }
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    /* Called whenever we call invalidateOptionsMenu() */
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        // If the nav drawer is open, hide action items related to the content view
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-        menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // The action bar home/up action should open or close the drawer.
-        // ActionBarDrawerToggle will take care of this.
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        // Handle action buttons
-        switch(item.getItemId()) {
-            case R.id.action_websearch:
-                // create intent to perform web search for this planet
-                Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
-                intent.putExtra(SearchManager.QUERY, getActionBar().getTitle());
-                // catch event that there's no activity to handle intent
-                if (intent.resolveActivity(getPackageManager()) != null) {
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(this, R.string.app_not_available, Toast.LENGTH_LONG).show();
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-//////
-
-
-        ////////////////////////// Clicked Drawer \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-
-    }
+}
