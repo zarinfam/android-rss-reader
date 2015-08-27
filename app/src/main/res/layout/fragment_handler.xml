@@ -1,0 +1,102 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:transitionGroup="true"
+    tools:context=".HandlerFragment">
+
+    <TextView android:text="RSS Reader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/RSSReader"
+        android:textSize="35dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <ImageButton
+        android:id="@+id/AddSite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@null"
+        android:src="@drawable/plus"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/Result"
+        android:layout_alignEnd="@+id/Result" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/comment"
+        android:layout_below="@+id/RSSReader"
+        android:layout_centerHorizontal="true"
+
+        android:textSize="35dp" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/pic"
+        android:layout_below="@+id/comment"
+        android:layout_centerHorizontal="true"
+        android:theme="@style/AppTheme" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/Title"
+        android:layout_below="@+id/pic"
+        android:hint="Title"
+
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/Link"
+        android:layout_below="@+id/Title"
+        android:layout_alignLeft="@+id/Title"
+        android:layout_alignStart="@+id/Title"
+
+        android:hint="Link"
+        android:layout_alignRight="@+id/Title"
+        android:layout_alignEnd="@+id/Title" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/Description"
+        android:layout_below="@+id/Link"
+        android:layout_alignLeft="@+id/Link"
+        android:layout_alignStart="@+id/Link"
+        android:hint="Description"
+        android:layout_alignRight="@+id/Link"
+        android:layout_alignEnd="@+id/Link" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fetch"
+        android:id="@+id/Fetch"
+        android:layout_below="@+id/Description"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@+id/pic"
+        android:layout_toStartOf="@+id/pic" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Result"
+        android:id="@+id/Result"
+        android:layout_below="@+id/Description"
+        android:layout_alignRight="@+id/Description"
+        android:layout_alignEnd="@+id/Description"
+        android:layout_toEndOf="@+id/pic"
+        android:layout_toRightOf="@+id/pic" />
+
+</RelativeLayout>
