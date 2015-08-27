@@ -3,7 +3,6 @@ package ir.irancell.course.rss;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,28 +16,23 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
-
 
 
 /**
  * Created by Amir7 on 12/08/2015.
  */
-public class FragmentTest extends Fragment {
+public class AddFeedFragment extends Fragment implements View.OnClickListener {
 
 
     private static final String ARG_PARAM1 = "param1";
@@ -51,22 +45,21 @@ public class FragmentTest extends Fragment {
     private String urlString = null;
     private XmlPullParserFactory xmlFactoryObject;
     public volatile boolean parsingComplete = true;
-    TextView textViewTest;
-    ImageButton AddSite;
+    private TextView textViewLink;
+    private ImageButton buttonAddSite;
 
     private ProgressDialog progress;
     public static final String HTTP_METHOD_GET = "GET";
     public static final String HTTP_METHOD_POST = "POST";
+
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
 
-
-
         //Inflate the layout for this fragment
         setHasOptionsMenu(true);
-        View view =inflater.inflate(R.layout.fragment_handler, container, false);
+        View view = inflater.inflate(R.layout.fragment_handler, container, false);
 
 /*        ArrayList<CustomerInformation> arrayOfUsers = new ArrayList<CustomerInformation>();
 
@@ -79,53 +72,12 @@ public class FragmentTest extends Fragment {
         listViewCustomer.setAdapter(adapter);
 
         */
-        AddSite = (ImageButton) view.findViewById(R.id.AddSite);
-        textViewTest = (TextView) view.findViewById(R.id.textViewTest);
+        buttonAddSite = (ImageButton) view.findViewById(R.id.buttonAddSite);
+        textViewLink = (TextView) view.findViewById(R.id.textViewLink);
+
+        buttonAddSite.setOnClickListener(this);
+
         return view;
-
-
-
-
-
-
-        new AsyncTask<String, Void, String>() {
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                progress = ProgressDialog.show(getActivity(), "",
-                        "������ �� ���� ...", true);
-            }
-
-            @Override
-            protected String doInBackground(String... params) {
-                return connectToRESTServer(params);
-
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-
-                progress.dismiss();
-
-                if (result != null) {
-                    try {
-                        JSONObject jsonObject = new JSONObject(result);
-
-                        GsonBuilder builder = new GsonBuilder();
-                        Gson gson = builder.create();
-                        Post post = gson.fromJson(result, Post.class);//convert result to Post object
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-
-            }
-        }.execute("posts/1", HTTP_METHOD_GET);
-
 
 
     }
@@ -139,7 +91,7 @@ public class FragmentTest extends Fragment {
 
         super.onCreateOptionsMenu(menu, inflater);
         //menu.clear();
-       inflater.inflate(R.menu.testmenu, menu);
+        inflater.inflate(R.menu.testmenu, menu);
 
     }
 
@@ -152,7 +104,7 @@ public class FragmentTest extends Fragment {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        switch(id) {
+        switch (id) {
             // case R.id.action_settings:
             //  Log.i("6666666", "Search Bottom Clicked");
             // Intent intent = new Intent(this, CustomerSearch.class);
@@ -162,7 +114,7 @@ public class FragmentTest extends Fragment {
             case R.id.action_test:
 
                 Log.i("", "Menu Test is Clicked");
-                textViewTest.setText("Menu Test Is Clicked");
+//                textViewTest.setText("Menu Test Is Clicked");
 
                 break;
 /*
@@ -178,12 +130,9 @@ public class FragmentTest extends Fragment {
     }
 
 
-
-
     public void FragmentHandler(String url) {
         this.urlString = url;
     }
-
 
 
     public String getTitle() {
@@ -197,7 +146,6 @@ public class FragmentTest extends Fragment {
     public String getDescription() {
         return description;
     }
-
 
 
     public void parseXMLAndStoreIt(XmlPullParser myParser) {
@@ -245,8 +193,6 @@ public class FragmentTest extends Fragment {
         Thread thread = new Thread(new Runnable() {
 
 
-
-
             @Override
             public void run() {
 
@@ -278,14 +224,14 @@ public class FragmentTest extends Fragment {
         thread.start();
     }
 
-    private String connectToRESTServer(String... params) {
+    private String connectToFeedSite(String... params) {
 
         BufferedReader reader = null;
 
         try {
             String httpMethod = params[1];
 
-            URL url = new URL(Config.BACKEND_BASE_URL + params[0]);
+            URL url = new URL(params[0]);
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setReadTimeout(10000 /* milliseconds */);
@@ -293,16 +239,8 @@ public class FragmentTest extends Fragment {
             connection.setRequestMethod(httpMethod);
 
             if (httpMethod.equals(HTTP_METHOD_GET)) {
-                connection.setRequestProperty("Accept", "application/json");
+                connection.setRequestProperty("Accept", "text/html");
                 connection.setDoInput(true);
-            } else if (httpMethod.equals(HTTP_METHOD_POST)) {
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setDoOutput(true);
-                connection.setChunkedStreamingMode(0);
-
-                OutputStream os = new BufferedOutputStream(connection.getOutputStream());
-                os.write(params[2].getBytes());
-                os.flush();
             }
 
             // Starts the query
@@ -344,8 +282,44 @@ public class FragmentTest extends Fragment {
         return null;
     }
 
+    @Override
+    public void onClick(View view) {
+
+        new AsyncTask<String, Void, String>() {
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                progress = ProgressDialog.show(getActivity(), "",
+                        "������ �� ���� ...", true);
+            }
+
+            @Override
+            protected String doInBackground(String... params) {
+                return connectToFeedSite(params);
+
+            }
+
+            @Override
+            protected void onPostExecute(String feedXmlResult) {
+                super.onPostExecute(feedXmlResult);
 
 
 
+                if (feedXmlResult != null) {
+                    GsonBuilder builder = new GsonBuilder();
+                    Gson gson = builder.create();
 
+                    //TODO parse xml and extract feed title and create a Feed object
+
+                    //TODO convert created Feed object to json and store it in SharedPreferences
+
+                }
+
+                progress.dismiss();
+
+            }
+        }.execute(textViewLink.getText()+"", HTTP_METHOD_GET);
+
+    }
 }

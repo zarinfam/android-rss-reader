@@ -170,7 +170,7 @@ public class MainActivity extends Activity {
 
 
                     Log.i("", "position=" + position);
-                    Fragment fr = new FragmentTest();
+                    Fragment fr = new AddFeedFragment();
                     FragmentManager fm = getFragmentManager();
                     FragmentTransaction fragmentTransaction = fm.beginTransaction();
                     fragmentTransaction.replace(R.id.content_frame, fr);

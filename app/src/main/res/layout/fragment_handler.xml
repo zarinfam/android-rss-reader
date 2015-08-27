@@ -16,7 +16,7 @@
         android:layout_centerHorizontal="true" />
 
     <ImageButton
-        android:id="@+id/AddSite"
+        android:id="@+id/buttonAddSite"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -57,7 +57,7 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/Link"
+        android:id="@+id/textViewLink"
         android:layout_below="@+id/Title"
         android:layout_alignLeft="@+id/Title"
         android:layout_alignStart="@+id/Title"
@@ -70,23 +70,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/Description"
-        android:layout_below="@+id/Link"
-        android:layout_alignLeft="@+id/Link"
-        android:layout_alignStart="@+id/Link"
+        android:layout_below="@+id/textViewLink"
+        android:layout_alignLeft="@+id/textViewLink"
+        android:layout_alignStart="@+id/textViewLink"
         android:hint="Description"
-        android:layout_alignRight="@+id/Link"
-        android:layout_alignEnd="@+id/Link" />
+        android:layout_alignRight="@+id/textViewLink"
+        android:layout_alignEnd="@+id/textViewLink" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Fetch"
-        android:id="@+id/Fetch"
+        android:id="@+id/buttonFetch"
         android:layout_below="@+id/Description"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_toLeftOf="@+id/pic"
-        android:layout_toStartOf="@+id/pic" />
+        android:layout_toStartOf="@+id/pic"
+        />
 
     <Button
         android:layout_width="wrap_content"

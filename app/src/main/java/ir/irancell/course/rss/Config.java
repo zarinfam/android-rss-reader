@@ -6,6 +6,5 @@ package ir.irancell.course.rss;
 public class Config {
 
 
-    public static final String BACKEND_BASE_URL = "http://jsonplaceholder.typicode.com/";
 
 }
